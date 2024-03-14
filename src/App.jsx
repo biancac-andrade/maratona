@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { MdOutlineEditNote, MdDelete } from "react-icons/md";
 import "./app.css";
 
 import  Axios from "axios";
@@ -139,6 +139,14 @@ function App() {
   const cardsFiltrados = cards.filter(card => {
     return card.title.toLowerCase().includes(searchTerm.toLowerCase())
   })
+ const fetchData = async () => {
+   try {
+     const response = await Axios.get(baseURL);
+     setCards(response.data);
+   } catch (error) {
+     console.error("Erro ao obter dados:", error);
+   }
+ };
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -156,11 +164,25 @@ function App() {
     setLink('')
   }
 
+   useEffect(() => {
+     fetchData();
+   }, []);
+
+  const handleEdit = (cardId) => {
+    console.log("Editar card com id:", cardId);
+  };
+
+  const handleDelete = async (cardId) => {
+      await Axios.delete(`${baseURL}/${cardId}`);
+      console.log("Card deletado com id:", cardId);
+      fetchData();
+  };
+
 
   useEffect(() => {
     async function getData() {
     const response = await Axios.get(baseURL);
-      console.log(response.data)
+      // console.log(response.data)
       setCards(response.data)
   }
     getData()
@@ -188,6 +210,16 @@ function App() {
                 <a href={item.link} target="_blank">
                   Saiba mais
                 </a>
+                <div>
+                  <MdOutlineEditNote
+                    onClick={() => handleEdit(item._id)}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <MdDelete
+                    onClick={() => handleDelete(item._id)}
+                    style={{ cursor: "pointer", marginLeft: "10px" }}
+                  />
+                </div>
               </div>
             </>
           );
