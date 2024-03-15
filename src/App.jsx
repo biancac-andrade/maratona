@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MdOutlineEditNote, MdDelete } from "react-icons/md";
 import "./app.css";
 
@@ -134,43 +134,63 @@ function App() {
   const [titulo, setTitulo] = useState("");
   const [description, setDescription] = useState("");
   const [link, setLink] = useState("");
+  const [editingCardId, setEditingCardId] = useState(null);
+  const formRef = useRef(null);
   const baseURL = "https://maratona-backend.onrender.com/cards";
 
   const cardsFiltrados = cards.filter(card => {
     return card.title.toLowerCase().includes(searchTerm.toLowerCase())
   })
- const fetchData = async () => {
-   try {
-     const response = await Axios.get(baseURL);
-     setCards(response.data);
-   } catch (error) {
-     console.error("Erro ao obter dados:", error);
-   }
- };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    async function sendData() {
-      await Axios.post(baseURL, {
-      title: titulo,
-      description: description,
-      link: link
-    })
-  }
-    sendData()
-    console.log('Dados digitados no formulario', { titulo, description, link })
-    setTitulo('')
-    setDescription('')
-    setLink('')
-  }
+   const handleSubmit = async (e) => {
+     e.preventDefault();
+     try {
+       if (editingCardId) {
+         await Axios.put(`${baseURL}/${editingCardId}`, {
+           title: titulo,
+           description: description,
+           link: link,
+         });
+       } else {
+         await Axios.post(baseURL, {
+           title: titulo,
+           description: description,
+           link: link,
+         });
+       }
+       fetchData();
+       setTitulo("");
+       setDescription("");
+       setLink("");
+       setEditingCardId(null);
+     } catch (error) {
+       console.error("Erro ao enviar dados:", error);
+     }
+   };
 
-   useEffect(() => {
-     fetchData();
+   const fetchData = async () => {
+     try {
+       const response = await Axios.get(baseURL);
+       console.log(response.data);
+       setCards(response.data);
+     } catch (error) {
+       console.error("Erro ao obter dados:", error);
+     }
+   };
+
+  useEffect(() => {
+   fetchData();
    }, []);
 
-  const handleEdit = (cardId) => {
-    console.log("Editar card com id:", cardId);
+ const handleEdit = (cardId) => {
+    setEditingCardId(cardId);
+    formRef.current.scrollIntoView({ behavior: "smooth" });
+    const cardToEdit = cards.find((card) => card._id === cardId);
+    setTitulo(cardToEdit.title);
+    setDescription(cardToEdit.description);
+    setLink(cardToEdit.link);
   };
+
 
   const handleDelete = async (cardId) => {
       await Axios.delete(`${baseURL}/${cardId}`);
@@ -226,8 +246,8 @@ function App() {
         })}
       </div>
 
-      <form className="form-container" onSubmit={handleSubmit}>
-        <h1>Cadastre um novo conteudo:</h1>
+      <form className="form-container" onSubmit={handleSubmit} ref={formRef}>
+        <h1>{editingCardId ? "Editar conteúdo:" : "Cadastre um novo conteúdo:"}</h1>
         <input
           placeholder="Titulo:"
           type="text"
@@ -245,7 +265,7 @@ function App() {
           value={link}
           onChange={(e) => setLink(e.target.value)}
         />
-        <button type="submit">Criar FlashCard</button>
+        <button type="submit">{editingCardId ? "Atualizar FlashCard" : "Criar FlashCard"}</button>
       </form>
       <footer>
         <p className="read-the-docs">
