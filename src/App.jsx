@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MdOutlineEditNote, MdDelete } from "react-icons/md";
+import { MdCreate, MdDelete } from "react-icons/md";
 import "./app.css";
 
 import  Axios from "axios";
@@ -142,47 +142,47 @@ function App() {
     return card.title.toLowerCase().includes(searchTerm.toLowerCase())
   })
 
-   const handleSubmit = async (e) => {
-     e.preventDefault();
-     try {
-       if (editingCardId) {
-         await Axios.put(`${baseURL}/${editingCardId}`, {
-           title: titulo,
-           description: description,
-           link: link,
-         });
-       } else {
-         await Axios.post(baseURL, {
-           title: titulo,
-           description: description,
-           link: link,
-         });
-       }
-       fetchData();
-       setTitulo("");
-       setDescription("");
-       setLink("");
-       setEditingCardId(null);
-     } catch (error) {
-       console.error("Erro ao enviar dados:", error);
-     }
-   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingCardId) {
+          await Axios.put(`${baseURL}/${editingCardId}`, {
+          title: titulo,
+          description: description,
+          link: link,
+        });
+      } else {
+        await Axios.post(baseURL, {
+          title: titulo,
+          description: description,
+          link: link,
+        });
+      }
+      fetchData();
+      setTitulo("");
+      setDescription("");
+      setLink("");
+      setEditingCardId(null);
+    } catch (error) {
+      console.error("Erro ao enviar dados:", error);
+    }
+  };
 
-   const fetchData = async () => {
-     try {
-       const response = await Axios.get(baseURL);
-       console.log(response.data);
-       setCards(response.data);
-     } catch (error) {
-       console.error("Erro ao obter dados:", error);
-     }
-   };
+  const fetchData = async () => {
+    try {
+      const response = await Axios.get(baseURL);
+      console.log(response.data);
+      setCards(response.data);
+    } catch (error) {
+      console.error("Erro ao obter dados:", error);
+    }
+  };
 
   useEffect(() => {
-   fetchData();
-   }, []);
+    fetchData();
+  }, []);
 
- const handleEdit = (cardId) => {
+  const handleEdit = (cardId) => {
     setEditingCardId(cardId);
     formRef.current.scrollIntoView({ behavior: "smooth" });
     const cardToEdit = cards.find((card) => card._id === cardId);
@@ -230,12 +230,16 @@ function App() {
                 <a href={item.link} target="_blank">
                   Saiba mais
                 </a>
-                <div>
-                  <MdOutlineEditNote
+                <div className="iconOptions">
+                  <MdCreate
+                    size={26}
+                    color="#6C5679"
                     onClick={() => handleEdit(item._id)}
                     style={{ cursor: "pointer" }}
                   />
                   <MdDelete
+                    size={26}
+                    color="#6C5679"
                     onClick={() => handleDelete(item._id)}
                     style={{ cursor: "pointer", marginLeft: "10px" }}
                   />
